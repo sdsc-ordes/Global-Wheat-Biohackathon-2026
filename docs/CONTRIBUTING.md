@@ -1,0 +1,16 @@
+## Contribution guidelines 
+
+This repository serves as a working example of an environment setup for the 5th Biohackathon Germany GlobalWheat track. It contains the environment definition as well as app examples to present potential starting points for the Biohackathon challenges.
+
+**Project:** This is an *Extra short* project, scoped only for the Global Wheat track of the Biohackathon 2026.
+
+## Ground rules 
+
+Feel free to suggest further examples in `examples/`, submit bug reports and discuss about the event, both during and after its completion. 
+
+Please keep in mind that this repository is created and maintained **only for the purpose and duration of the BioHackathon** by the Swiss Data Science Center (SDSC).
+
+## AI usage guidelines 
+
+While the Biohackaton welcomes and endorses the use of LLM-based code generation tools, the SDSC abides by clearly defined strict guidelines when it comes to AI-generated content. Therefore, please mind the following [guidelines required from contributors to this repository](https://swissdatasciencecenter.github.io/best-practice-documentation/docs/chapters/security/llm-assistant/
+).
