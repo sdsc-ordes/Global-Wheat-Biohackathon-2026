@@ -46,6 +46,13 @@ For model inference, API Keys would be needed: distributed to participants befor
 
 ![](https://github.com/MateuszFido/gwcoord-test/blob/main/examples/renku-demo-api.gif)
 
+## AI usage guidelines 
+
+While the Biohackaton welcomes and endorses the use of LLM-based code generation tools, the SDSC abides by clearly defined strict guidelines when it comes to AI-generated content. Therefore, please mind the following [guidelines required from contributors to this repository](https://swissdatasciencecenter.github.io/best-practice-documentation/docs/chapters/security/llm-assistant/
+).
+
+Please refer to `docs/CONTRIBUTING.md` for more details.
+
 ## Useful links
 
 - [Biohackathon 2026 group on renkulab.io](https://renkulab.io/g/gwhs-biohackathon-2026/)  
