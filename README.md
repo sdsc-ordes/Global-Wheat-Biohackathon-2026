@@ -32,7 +32,7 @@ Each can be accessed immediately after launching a session inside a Renku projec
 
 These function with the BYOK (bring-your-own-key) model. The participants can directly register with their subscription plans or API keys.
 
-You can find an example of a vibe-coded app like this in this repo -- `app.py` is designed to be run directly from your Renku session, in a terminal. It will then open in another browser tab with a URL specific to the Renku session.
+You can find an example of a vibe-coded app like this in this repo -- `examples/app.py` is designed to be run directly from your Renku session, in a terminal. It will then open in another browser tab with a URL specific to the Renku session.
 
 ![](https://github.com/MateuszFido/gwcoord-test/blob/main/examples/renku-demo.gif)
 
@@ -40,7 +40,7 @@ You can find an example of a vibe-coded app like this in this repo -- `app.py` i
 
 The second option is to use the [API prepared by Dr. Hanzhou Wang](https://github.com/UTokyo-FieldPhenomics-Lab/gwhs-biohackathon-api-gateway/tree/main) -- either on Renku or directly on the participant's machine. 
 
-An example Jupyter notebook showing how data can be pulled using the API can be found in this repository -- `api.ipynb`. 
+An example Jupyter notebook showing how data can be pulled using the API can be found in this repository -- `examples/api.ipynb`. 
 
 For model inference, API Keys would be needed: distributed to participants before/on December 7th.
 

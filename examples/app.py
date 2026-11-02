@@ -16,7 +16,7 @@ from PIL import Image
 from transformers import AutoImageProcessor, SegformerForSemanticSegmentation
 
 MODEL = "GlobalWheat/GWFSS_Segformer_b4"
-DEFAULT_DATA = Path("examples/train-00000-of-00001.parquet")
+DEFAULT_DATA = Path(__file__).parent / "train-00000-of-00001.parquet"
 LABELS = ("background", "head", "stem", "leaf")
 PALETTE = np.array([[0, 0, 0], [255, 190, 40], [50, 170, 240], [70, 200, 100]], dtype=np.uint8)
 

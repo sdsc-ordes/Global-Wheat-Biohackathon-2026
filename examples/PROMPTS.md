@@ -21,10 +21,10 @@ Requirements:
 Do not read secrets, do not change environment files. 
 ```
 
-Then, start the server:
+Then, start the server (from repo root):
 
 ```{sh}
-python -m streamlit run app.py \
+python -m streamlit run examples/app.py \
   --server.address=127.0.0.1 \
   --server.port=8501 \
   --server.headless=true \
