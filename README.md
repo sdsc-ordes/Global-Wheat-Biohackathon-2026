@@ -8,7 +8,7 @@ platform [Renku](https://renkulab.io/).
 It contains two examples for the Hackathon: 
 
 - [Local (Renku only)](https://github.com/MateuszFido/gwcoord-test#local-renku-only)
-- [API](https://github.com/MateuszFido/gwcoord-test#api)
+- [API](https://github.com/MateuszFido/gwcoord-test#api) (external codebase, *not* SDSC-maintained)
 
 ## Local (Renku only)
 
@@ -18,6 +18,13 @@ The first option is to leverage the resources already present on Renku.
 The participants will be provided with access to the dataset that Renku connects to 
 via an AWS S3 bucket instance. All teams and individuals can then access the dataset
 from their own sessions. 
+
+The dataset supports a cascade of tasks:
+
+- segment and count the spikelets of a spike and measure their size
+- detect and quantify diseases such as Fusarium head blight
+- quantify the effects of abiotic stress such as heat, frost or shading
+
 - ### Models
 
 Models will be hosted on [the GlobalWheat repo on HuggingFace](https://huggingface.co/GlobalWheat).
