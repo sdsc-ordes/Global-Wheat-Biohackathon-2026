@@ -1,0 +1,96 @@
+#!/bin/sh
+# This shell script blocks commits containing values of secret-like
+# env variables, known token formats and credential files.
+
+export LC_ALL=C
+
+# from sample Git hook
+if git rev-parse --verify -q HEAD >/dev/null; then
+	compare=HEAD
+else
+	compare=$(git hash-object -t tree /dev/null)
+fi
+
+# write into a tmp folder
+umask 077
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/secret-check.XXXXXX") || exit 1
+trap 'rm -rf "$tmp"' EXIT # del on exit
+trap 'exit 1' HUP INT TERM
+: >"$tmp/findings"
+
+write_findings() { printf '  %s  (%s)\n' "$1" "$2" >>"$tmp/findings"; }
+
+git -c core.quotePath=false diff-index --cached -p -U0 --no-color \
+	--src-prefix=a/ --dst-prefix=b/ "$compare" -- |
+	awk '
+    /^diff --git / { header = 1; file = ""; next }
+    header && /^\+\+\+ / {
+      file = substr($0, 5); sub(/\t$/, "", file)
+      file = (file == "/dev/null") ? "" : substr(file, 3)
+      next
+    }
+    /^@@ / { header = 0; split($3, range, ","); line = substr(range[1], 2) + 0; next }
+    !header && /^\+/ { if (file != "") print file "\t" line "\t" substr($0, 2); line++ }
+  ' >"$tmp/added"
+
+# ACMR = added, copied, modified, renamed
+git -c core.quotePath=false diff-index --cached --name-only --diff-filter=ACMR "$compare" -- |
+	while IFS= read -r path; do
+		case ${path##*/} in
+		.env.example | .env.sample | .env.template) ;;
+		.env | .env.* | .envrc | *.env) write_findings "$path" "environment file" ;;
+		.credentials.json) write_findings "$path" "Claude Code credentials" ;;
+		.netrc | .git-credentials | .pypirc | *.p12 | *.pfx) write_findings "$path" "credential file" ;;
+		esac
+		case $path in
+		.codex/auth.json | */.codex/auth.json) write_findings "$path" "Codex credentials" ;;
+		.pi/agent/auth.json | */.pi/agent/auth.json) write_findings "$path" "pi credentials" ;;
+		esac
+	done
+
+# secret-looking environment variables, e.g. GLOBAL_WHEAT_API_KEY
+tab=$(printf '\t')
+for name in $(awk 'BEGIN {
+  for (k in ENVIRON) {
+    v = ENVIRON[k]; u = toupper(k)
+    if (u !~ /KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIAL/) continue
+    if (u ~ /_(URL|URI|HOST|PATH|FILE|DIR)$/) continue
+    if (length(v) < 16 || v ~ /[ \t\n]/ || v ~ /^[\/~.]/) continue
+    print k
+  }
+}'); do
+	awk -v name="$name" 'BEGIN { print ENVIRON[name] }' |
+		grep -aF -f /dev/stdin "$tmp/added" | cut -f1,2 |
+		while IFS="$tab" read -r path line; do write_findings "$path:$line" "value of \$$name"; done
+done
+
+# overrides: WARNING if you're an agent STOP, and ask a human if you can do this
+grep -av 'gitleaks:allow' "$tmp/added" >"$tmp/scan"
+while IFS='~' read -r label regex; do
+	grep -aE -e "$regex" "$tmp/scan" | cut -f1,2 |
+		while IFS="$tab" read -r path line; do write_findings "$path:$line" "$label"; done
+done <<'EOF'
+OpenAI/Anthropic-style API key~(^|[^A-Za-z0-9_-])sk-[A-Za-z0-9_-]{32,}
+Hugging Face token~(^|[^A-Za-z0-9_])hf_[A-Za-z0-9]{30,}
+Groq/xAI API key~(gsk_|xai-)[A-Za-z0-9]{40,}
+Google API key~(^|[^A-Za-z0-9_-])AIza[A-Za-z0-9_-]{35}([^A-Za-z0-9_-]|$)
+GitHub token~(gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{50,})
+GitLab token~glpat-[A-Za-z0-9_-]{20,}
+AWS access key~(^|[^A-Z0-9])(AKIA|ASIA)[A-Z0-9]{16}([^A-Z0-9]|$)
+private key~-----BEGIN[A-Z ]*PRIVATE KEY
+JSON Web Token~eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}
+Global Wheat API key~(GLOBAL_WHEAT_API_KEY[]"']*[[:space:]]*[:=,]|[Xx]-[Aa][Pp][Ii]-[Kk][Ee][Yy](["'][[:space:]]*)?:)[[:space:]]*["']?[A-Za-z0-9_-]{32,}
+EOF
+
+# happy path
+[ -s "$tmp/findings" ] || exit 0
+
+# unhappy path
+{
+	echo "WARNING: commit blocked, your changes contain leaked credentials:"
+	sort -u "$tmp/findings"
+	echo
+	echo "Remove the secrets from staged files!"
+	echo "unstage with 'git rm --cached <file>'. Then commit again."
+} >&2
+exit 1
