@@ -23,7 +23,7 @@ IMAGES = [Image.open(BytesIO(row["bytes"])).convert("RGB") for row in pq.read_ta
 
 def cgroup(name):
     '''
-    Reads a cgroup v2 file: the session's real limits, which os.cpu_count() and torch don't see.
+    Reads session's limits from a cgroup v2 file.
     '''
     path = Path("/sys/fs/cgroup") / name
     return path.read_text().strip().replace("\n", ", ") if path.exists() else "n/a"
@@ -136,7 +136,7 @@ def huggingface_rate_limit():
 def main():
     os.system("clear")
     print("=== Renku stress test script ===\n")
-    print("This script will try to push to (and beyond) the resource limits of the session.")
+    print("This script will try to push to (and maybe beyond) the resource limits of the session.")
     while 1:
         mode = input("Please type in the test (cpu/gpu/oom/hf): ")
         os.system("clear")
