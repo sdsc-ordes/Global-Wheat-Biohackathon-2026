@@ -86,21 +86,27 @@ def gpu_run():
 
 def oom_run():
     '''
-    Loads copies of the test dataset to trigger OOM.
+    Fills the session's memory to 90% of limit with copies of the test dataset, holds for 60 seconds, then frees it.
     '''
-    print("=== OOM TEST ===\n")
-    print("This test will continuously create copies of the dataset in memory until it crashes the session.\nYou can stop it at any time with Ctrl+C\n")
+    print("=== MEMORY TEST ===\n")
+    print("This test will fill 90% of the session's memory for 60 seconds, then free it.\nYou can stop it at any time with Ctrl+C\n")
     time.sleep(5)
-    print(f"cgroup memory.max: {cgroup('memory.max')} bytes")
+    limit = cgroup("memory.max")
+    if not limit.isdigit():
+        print(f"Session memory limit unknown (memory.max: {limit}), skipping...")
+        return
+    limit = int(limit)
     dataset = [np.asarray(image, dtype=np.float32) for image in IMAGES]
-    gib = sum(array.nbytes for array in dataset) / 2**30
+    size = sum(array.nbytes for array in dataset)
     copies = []
-    i = 1
-    while 1:
+    while int(cgroup("memory.current")) + size < 0.9 * limit:  # memory.current counts every process in the session
         copies.append([array.copy() for array in dataset])
-        print(f"Used memory: {i * gib:.1f} GiB")
-        i += 1
-        time.sleep(0.5)
+        print(f"Used memory: {int(cgroup('memory.current')) / 2**30:.2f} of {limit / 2**30:.2f} GiB")
+        os.system("clear")
+    print(f"Memory usage: {int(cgroup('memory.current')) / limit:.0%} of the limit, for 60 seconds")
+    time.sleep(60)
+    copies = None
+    print(f"Freed, used memory now {int(cgroup('memory.current')) / 2**30:.2f} GiB | cgroup memory.events: {cgroup('memory.events')}")  
 
 def huggingface_rate_limit():
     '''
