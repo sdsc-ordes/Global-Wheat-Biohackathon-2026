@@ -102,8 +102,8 @@ def oom_run():
     while int(cgroup("memory.current")) + size < 0.9 * limit:  # memory.current counts every process in the session
         copies.append([array.copy() for array in dataset])
         print(f"Used memory: {int(cgroup('memory.current')) / 2**30:.2f} of {limit / 2**30:.2f} GiB")
-        os.system("clear")
-    print(f"Memory usage: {int(cgroup('memory.current')) / limit:.0%} of the limit, for 60 seconds")
+    os.system("clear")
+    print(f"Memory usage: {int(cgroup('memory.current')) / limit:.0%} of the limit, now sleeping for 60 seconds")
     time.sleep(60)
     copies = None
     print(f"Freed, used memory now {int(cgroup('memory.current')) / 2**30:.2f} GiB | cgroup memory.events: {cgroup('memory.events')}")  
